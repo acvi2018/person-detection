@@ -1,0 +1,182 @@
+Research papers:
+https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Heilbron_ActivityNet_A_Large-Scale_2015_CVPR_paper.pdf
+https://arxiv.org/pdf/1706.03038.pdf
+A survey of video datasets for human action and activity recognition
+http://storage.googleapis.com/www.thumos.info/thumos15_notebooks/TH15_UTS&CMU.pdf
+https://arxiv.org/pdf/1411.4006.pdf
+
+
+Data:
+Easy : https://mmspg.epfl.ch/mini-drone
+Hard : http://okutama-action.org/
+Harder : http://cvgl.stanford.edu/projects/uav_data/
+
+Video data not drone : http://www.thumos.info/home.html
+
+
+Proposed methodology:
+=====================
+* Person detection on videos captured by unmanned Aerial Vehicles(UAVs) or drones, using deep nueral networks by extending existing state-of-the-art object detection architectures (SSD/ Faster R-CNN/ Mask R-CNN).
+
+What is novel in your work:
+==========================
+* State-of-the-art person detection in drone videos using deep nueral networks.
+* Deep nueral architecture works better than existing benchmarks on different drone datasets which are captured from different altitudes and inclinations.
+
+Dataset, planned experiment:
+============================
+Data:
+Easy : https://mmspg.epfl.ch/mini-drone (Milestone 1)
+Hard : http://okutama-action.org/ (Milestone 2)
+Harder : http://cvgl.stanford.edu/projects/uav_data/ (Extended Milestone)
+
+Experiments include : 
+1. Fine tuning SSD, Faster R-CNN and Mask R-CNN object detection architectures on above drone datasets.
+2. Accuracy analysis on models with varying input size evaluated on above datasets.
+3. Enhancements on existing object detection state-of-the-art architectures(SSD, FasterR-CNN & Mask R_CNN) to get better accuracies.
+
+
+Performance metrics,expected results:
+=====================================
+Reference : 
+http://cocodataset.org/#detections-eval
+https://stackoverflow.com/questions/48461855/understanding-and-tracking-of-metrics-in-object-detection
+http://homepages.inf.ed.ac.uk/ckiw/postscript/ijcv_voc09.pdf
+https://datascience.stackexchange.com/questions/25119/how-to-calculate-map-for-detection-task-for-the-pascal-voc-challenge
+
+Single detection prediction, single actual object
+Multiple detection prediction, single actual object
+Multiple detetcion prediction, multiple actual objects
+
+How do the below metrics help in handling these scenarios?
+
+For detection, a common way to determine if one object proposal was right is Intersection over Union (IoU, IU).
+Commonly, IoU > 0.5 means that it was a hit, otherwise it was a fail. 
+For each class, one can calculate the
+	True Positive TP(c): a proposal was made for class c and there actually was an object of class c
+    	False Positive FP(c): a proposal was made for class c, but there is no object of class c
+
+    	Average Precision for class c: TP(c)/TP(c) + FP(c)
+
+* Intersection over Union:
+	Intersection over Union (IoU) is a metric commonly used in object detection for evaluating correctness of a bounding box.  
+	IoU is computed by
+			IoU = Intersection area / Union area
+	where the intersection area is the area of the intersection between the predicted bounding box and the true bounding box (their overlap).  
+	Similarly the union area is the union of the two.  A predicted bounding box close to the true bounding box yields an IoU close to 1.
+
+* mean Average Precision: 
+	mean Average Precision (mAP) is the Average Precision averaged over all class categories in a dataset
+
+
+OBJECT DETECTION
+================
+Links:
+https://www.pyimagesearch.com/2017/09/18/real-time-object-detection-with-deep-learning-and-opencv/
+https://www.pyimagesearch.com/2017/09/11/object-detection-with-deep-learning-and-opencv/
+https://pjreddie.com/darknet/yolo/
+https://blog.athelas.com/a-brief-history-of-cnns-in-image-segmentation-from-r-cnn-to-mask-r-cnn-34ea83205de4
+https://towardsdatascience.com/deep-learning-for-object-detection-a-comprehensive-review-73930816d8d9
+https://courses.cs.washington.edu/courses/cse590v/14au/cse590v_wk1_rcnn.pdf
+https://towardsdatascience.com/an-intuitive-guide-to-deep-network-architectures-65fdc477db41
+https://www.learnopencv.com/selective-search-for-object-detection-cpp-python/
+https://docs.microsoft.com/en-us/cognitive-toolkit/Object-Detection-using-Fast-R-CNN#algorithm-details
+https://towardsdatascience.com/is-google-tensorflow-object-detection-api-the-easiest-way-to-implement-image-recognition-a8bd1f500ea0
+https://github.com/rbgirshick/py-faster-rcnn/issues/594
+https://datascience.stackexchange.com/questions/25119/how-to-calculate-map-for-detection-task-for-the-pascal-voc-challenge
+https://discuss.pytorch.org/t/how-to-perform-finetuning-in-pytorch/419
+https://discuss.pytorch.org/t/how-to-extract-features-of-an-image-from-a-trained-model/119
+https://towardsdatascience.com/transfer-learning-using-pytorch-part-2-9c5b18e15551
+https://towardsdatascience.com/transfer-learning-using-pytorch-4c3475f4495
+http://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
+https://leonardoaraujosantos.gitbooks.io/artificial-inteligence/content/single-shot-detectors/ssd.html
+https://github.com/rbgirshick/py-faster-rcnn/issues/484
+
+Papers :
+Selective Search : http://www.huppelen.nl/publications/selectiveSearchDraft.pdf
+R-CNN : https://arxiv.org/abs/1311.2524
+R-FCN : https://arxiv.org/abs/1605.06409
+Fast R-CNN : https://arxiv.org/abs/1504.08083
+Faster R-CNN : https://arxiv.org/abs/1506.01497
+YOLO : https://arxiv.org/abs/1506.02640
+SSD : https://arxiv.org/abs/1512.02325
+MobileNet : https://arxiv.org/abs/1704.04861
+Mask R-CNN : https://arxiv.org/abs/1703.06870
+Impression Network for Video Object Detection : https://arxiv.org/abs/1712.05896
+Using Deep Networks for Drone Detection : https://arxiv.org/pdf/1706.05726.pdf
+Deep drone : https://web.stanford.edu/class/cs231a/prev_projects_2016/deep-drone-object__2_.pdf
+A Deep Learning Approach to Drone Monitoring : https://arxiv.org/pdf/1712.00863.pdf
+Case study on drone object detetcion: https://kth.diva-portal.org/smash/get/diva2:1108625/FULLTEXT01.pdf
+PASCAL Visual Object Classes (VOC) Challenge : http://homepages.inf.ed.ac.uk/ckiw/postscript/ijcv_voc09.pdf
+Speed/accuracy trade-offs for modern convolutional object detectors : https://arxiv.org/abs/1611.10012
+
+
+Github:
+https://github.com/BichenWuUCB/squeezeDet
+https://github.com/Zehaos/MobileNet
+https://github.com/weiliu89/caffe/tree/ssd
+https://github.com/ShaoqingRen/faster_rcnn
+https://github.com/pjreddie/darknet
+https://github.com/facebookresearch/Detectron
+https://github.com/rbgirshick/rcnn
+https://github.com/daijifeng001/r-fcn
+https://github.com/amdegroot/ssd.pytorch
+https://github.com/abhineet123/Deep-Learning-for-Tracking-and-Detection
+
+
+
+Additional NOTES:
+* Net2Net  : Ian GoodFellow
+* Network Morphism : Microsoft
+
+
+
+
+
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+B
+B
+B
+B
+B
+B
+
