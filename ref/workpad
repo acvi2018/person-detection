@@ -91,6 +91,11 @@ https://towardsdatascience.com/transfer-learning-using-pytorch-4c3475f4495
 http://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
 https://leonardoaraujosantos.gitbooks.io/artificial-inteligence/content/single-shot-detectors/ssd.html
 https://github.com/rbgirshick/py-faster-rcnn/issues/484
+https://towardsdatascience.com/understanding-ssd-multibox-real-time-object-detection-in-deep-learning-495ef744fab
+gluon.mxnet.io/chapter08_computer-vision/object-detection.html (Partical tutorial)
+http://cv-tricks.com/object-detection/single-shot-multibox-detector-ssd (detailed blog)
+http://cv-tricks.com/object-detection/faster-r-cnn-yolo-ssd/
+
 
 Papers :
 Selective Search : http://www.huppelen.nl/publications/selectiveSearchDraft.pdf
@@ -109,7 +114,7 @@ A Deep Learning Approach to Drone Monitoring : https://arxiv.org/pdf/1712.00863.
 Case study on drone object detetcion: https://kth.diva-portal.org/smash/get/diva2:1108625/FULLTEXT01.pdf
 PASCAL Visual Object Classes (VOC) Challenge : http://homepages.inf.ed.ac.uk/ckiw/postscript/ijcv_voc09.pdf
 Speed/accuracy trade-offs for modern convolutional object detectors : https://arxiv.org/abs/1611.10012
-
+MultiBox detection : https://arxiv.org/abs/1412.1441
 
 Github:
 https://github.com/BichenWuUCB/squeezeDet
@@ -129,54 +134,4 @@ Additional NOTES:
 * Net2Net  : Ian GoodFellow
 * Network Morphism : Microsoft
 
-
-
-
-
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-B
-B
-B
-B
-B
-B
 
