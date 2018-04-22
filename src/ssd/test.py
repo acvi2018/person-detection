@@ -119,20 +119,20 @@ def calculate_metrics_for_image(image_index, model, img_file, ground_truth, cuda
             predictions_conf_list.append((person_detections[i][0], (person_detections[i,1:] * scale).cpu().numpy()))
             predictions_list.append((person_detections[i,1:] * scale).cpu().numpy())
 
-    predict_dict = {'ground_truth' : [list(gt[0:4]) for gt in ground_truth], 'prediction' : predictions_list}
     TP, FP, FN = calculate_metrics([list(gt[0:4]) for gt in ground_truth], predictions_list)
+    predict_dict = {'ground_truth' : [list(gt[0:4]) for gt in ground_truth], 'prediction' : predictions_list, 'tp' : TP, 'fp' : FP, 'fn' : FN}
     # print('TP: {0}, FP: {1}, FN: {2}'.format(TP, FP, FN))
     return (TP, FP, FN, predict_dict)
 
 
-result_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_mini_drone'
+result_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_mini_drone_40000itr'
 cuda = True
 # Load pretrained SSD model
 net = build_ssd('test', 300, 2)    # initialize SSD
 
 #net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_0712_115000.pth')
 #net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_mAP_77.43_v2.pth')
-net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/v2.pth')
+net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_2class40000.pth')
 
 if cuda:
     net.cuda()
@@ -161,10 +161,10 @@ pred_dict = {}
 
 for i in range(num_images):
     print('Testing image {:d}/{:d}....'.format(i+1, num_images))
-    img = testset.pull_image(i)
+    img, image_name = testset.pull_image(i)
     groundtruth = testset.pull_annotation(i)
     TP, FP, FN, pred_obj= calculate_metrics_for_image(i, net, img, groundtruth, cuda, 1)
-    predict_dict[i] = pred_obj
+    pred_dict[i] = pred_obj
     print(TP,FP,FN)
     TP_fin += TP
     FP_fin += FP
@@ -187,4 +187,4 @@ fp1.close()
 
 print('AP@0.5 : {0}%'.format(AP*100))
 print('Recall@0.5 : {0}%'.format(Recall * 100))
-print('F1 Score@0.5 : {0}%'.format((2* AP * Recall) / (AP + Recall)))
+print('F1 Score@0.5 : {0}'.format((2* AP * Recall) / (AP + Recall)))
