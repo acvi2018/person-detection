@@ -29,6 +29,9 @@ class PascalVOCDataset(Dataset):
         valid_ann_list = []
         image_name = self.meta_data.iloc[idx]['img_file']
         ann_file = self.meta_data.iloc[idx]['ann_file']
+
+        #       print('{0}/{1}'.format(self.ann_folder, ann_file))
+        #print('{0}/{1}'.format(self.frame_folder, image_name))
         # Read image and json ann file
         with open('{0}/{1}'.format(self.ann_folder, ann_file), 'r') as jfile:
             ann_json = json.load(jfile)
@@ -117,10 +120,10 @@ class AnnotationTransform(object):
         '''
         transformed_ann_list = []
         for index, ann in enumerate(anns):
-            ann[0] = ann[0] / width
-            ann[1] = ann[1] / height
-            ann[2] = ann[2] / width
-            ann[3] = ann[3] / height
+            ann[0] = float(ann[0]) / width
+            ann[1] = float(ann[1]) / height
+            ann[2] = float(ann[2]) / width
+            ann[3] = float(ann[3]) / height
             ann[4] = self.class_map[ann[4]]
             transformed_ann_list.append(ann)
             

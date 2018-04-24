@@ -22,23 +22,23 @@ def parse_ann_file(file_path, object_type):
                     person_anns.append({'difficult' : int(obj['difficult']), 'truncated' : int(obj['truncated']), 
                                    'xmin' : int(obj['bndbox']['xmin']) -1, 
                                     'ymin' : int(obj['bndbox']['ymin']) -1,
-                                   'xmax' : int(obj['bndbox']['xmin']) -1, 
-                                    'ymax' : int(obj['bndbox']['xmin']) -1, 
+                                   'xmax' : int(obj['bndbox']['xmax']) -1, 
+                                    'ymax' : int(obj['bndbox']['ymax']) -1, 
                                     'label': object_type})
         else:
             if object_list['name'] == object_type:
                 person_anns.append({'difficult' : int(object_list['difficult']), 'truncated' : int(object_list['truncated']), 
                                    'xmin' : int(object_list['bndbox']['xmin']) -1, 
                                     'ymin' : int(object_list['bndbox']['ymin']) -1,
-                                   'xmax' : int(object_list['bndbox']['xmin']) -1, 
-                                    'ymax' : int(object_list['bndbox']['xmin']) -1, 
+                                   'xmax' : int(object_list['bndbox']['xmax']) -1, 
+                                    'ymax' : int(object_list['bndbox']['ymax']) -1, 
                                     'label': object_type})
     return(person_anns, width, height, depth)
 
-ann_folder = '/home/vijin/iith/project/data/VOCdevkit/VOC2012/Annotations'
-object_file = '/home/vijin/iith/project/data/VOCdevkit/VOC2012/ImageSets/Main/person_trainval.txt'
-ann_out_folder = '/home/vijin/iith/project/data/VOCdevkit/VOC2012/Person_Annotations'
-root_folder = '/home/vijin/iith/project/data/VOCdevkit/VOC2012'
+ann_folder = '/home/vijin/iith/project/data/VOCdevkit/VOC2007/Annotations'
+object_file = '/home/vijin/iith/project/data/VOCdevkit/VOC2007/ImageSets/Main/person_trainval.txt'
+ann_out_folder = '/home/vijin/iith/project/data/VOCdevkit/VOC2007/Person_Annotations'
+root_folder = '/home/vijin/iith/project/data/VOCdevkit/VOC2007'
 
 data = pd.read_csv(object_file, header=None, sep='\s+', names=['image_name', 'type'], encoding='gbk', dtype={'image_name':'str', 'type' : 'float'})
 
