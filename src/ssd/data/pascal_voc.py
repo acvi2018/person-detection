@@ -1,16 +1,19 @@
 import torch
 from torch.utils.data import Dataset 
 import pandas as pd
-import numpy as np
 import cv2
+import numpy as np
 import json
 
-class MiniDroneDataset(Dataset):
+class PascalVOCDataset(Dataset):
     
-    def __init__(self, meta_data_file, frame_folder, ann_folder, ann_transform=None, img_transform=None):
+    def __init__(self, meta_data_file, frame_folder, ann_folder, ann_transform=None, img_transform=None, 
+                 include_truncated=True, include_difficult= True):
         self.meta_data = pd.read_csv(meta_data_file)
         self.frame_folder = frame_folder
         self.ann_folder = ann_folder
+        self.include_truncated = include_truncated
+        self.include_difficult = include_difficult
         self.ann_transform = ann_transform
         self.img_transform = img_transform
         
@@ -32,7 +35,14 @@ class MiniDroneDataset(Dataset):
         img = cv2.imread('{0}/{1}'.format(self.frame_folder, image_name))
         height, width, channels = img.shape
         
+        # iterate through json and decide to include truncated and difficult based on flags
         for i in range(len(ann_json)):
+            if not self.include_truncated:
+                if int(ann_json[i]['truncated']) == 1 :
+                    continue
+            if not self.include_difficult:
+                if int(ann_json[i]['difficult']) == 1 :
+                    continue
             valid_ann_list.append([ann_json[i]['xmin'], ann_json[i]['ymin'], 
                                   ann_json[i]['xmax'], ann_json[i]['ymax'], ann_json[i]['label']])
         
@@ -54,7 +64,7 @@ class MiniDroneDataset(Dataset):
     
     def pull_image(self, idx):
         image_name = self.meta_data.iloc[idx]['img_file']
-        return cv2.imread('{0}/{1}'.format(self.frame_folder, image_name), cv2.IMREAD_COLOR), image_name
+        return cv2.imread('{0}/{1}'.format(self.frame_folder, image_name), cv2.IMREAD_COLOR)
     
     def pull_annotation(self, idx):
         ann_file = self.meta_data.iloc[idx]['ann_file']
@@ -62,6 +72,12 @@ class MiniDroneDataset(Dataset):
             ann_json = json.load(jfile)
         valid_ann_list = []
         for i in range(len(ann_json)):
+            if not self.include_truncated:
+                if int(ann_json[i]['truncated']) == 1 :
+                    continue
+            if not self.include_difficult:
+                if int(ann_json[i]['difficult']) == 1 :
+                    continue
             valid_ann_list.append([ann_json[i]['xmin'], ann_json[i]['ymin'], 
                                   ann_json[i]['xmax'], ann_json[i]['ymax'], ann_json[i]['label']])
         return valid_ann_list

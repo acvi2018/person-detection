@@ -53,7 +53,7 @@ class OkutamaDataset(Dataset):
         # if image transformation is present
         if self.img_transform is not None:
             valid_ann_list = np.array(valid_ann_list)
-            img, boxes, labels = self.transform(img, valid_ann_list[:, :4], valid_ann_list[:, 4])
+            img, boxes, labels = self.img_transform(img, valid_ann_list[:, :4], valid_ann_list[:, 4])
             # to rgb (Need to understand more....)
             img = img[:, :, (2, 1, 0)]
             # img = img.transpose(2, 0, 1)
