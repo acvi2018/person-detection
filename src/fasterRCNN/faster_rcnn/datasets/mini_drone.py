@@ -90,7 +90,7 @@ class mini_drone(imdb):
         """
         Construct an image path from the image's "index" identifier.
         """
-        image_path = os.path.join(self._data_path, self._image_set, 'Images',
+        image_path = os.path.join(self._data_path, self._image_set, 'frames',
                                   index + self._image_ext)
         assert os.path.exists(image_path), \
             'Path does not exist: {}'.format(image_path)
