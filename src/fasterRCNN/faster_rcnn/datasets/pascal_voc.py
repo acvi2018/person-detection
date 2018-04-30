@@ -24,6 +24,8 @@ from .imdb import ROOT_DIR
 import ds_utils
 from .voc_eval import voc_eval
 
+import json
+
 # TODO: make fast_rcnn irrelevant
 # >>>> obsolete, because it depends on sth outside of this project
 from ..fast_rcnn.config import cfg
@@ -38,7 +40,11 @@ class pascal_voc(imdb):
         self._image_set = image_set
         self._devkit_path = self._get_default_path() if devkit_path is None \
             else devkit_path
-        self._data_path = os.path.join(self._devkit_path, 'VOC' + self._year)
+        ###CHANDRA
+        if self._year == '2018':
+            self._data_path = os.path.join(self._devkit_path)
+        else:
+            self._data_path = os.path.join(self._devkit_path, 'VOC' + self._year)
         '''
         self._classes = ('__background__',  # always index 0
                          'aeroplane', 'bicycle', 'bird', 'boat',
@@ -98,7 +104,7 @@ class pascal_voc(imdb):
         
         ###image_set_file = os.path.join(self._data_path, 'ImageSets', 'Main',
         ###                              self._image_set + '.txt')
-        image_set_file = os.path.join(self._data_path, 'metadata.csv')
+        image_set_file = os.path.join(self._data_path, self._image_set, 'metadata_2.csv')
         assert os.path.exists(image_set_file), \
             'Path does not exist: {}'.format(image_set_file)
         with open(image_set_file) as f:
@@ -109,7 +115,11 @@ class pascal_voc(imdb):
         """
         Return the default path where PASCAL VOC is expected to be installed.
         """
-        return os.path.join(cfg.DATA_DIR, 'minidrone' + self._image_set)
+        ###CHANDRA
+        ###return os.path.join(cfg.DATA_DIR, 'VOCdevkit' + self._year)
+        if self._year == '2018':
+            return os.path.join(cfg.DATA_DIR, 'VOC' + self._year)
+        return os.path.join(cfg.DATA_DIR, 'VOC' + self._image_set)
 
     def gt_roidb(self):
         """
@@ -203,9 +213,12 @@ class pascal_voc(imdb):
         Load image and bounding boxes info from XML file in the PASCAL VOC
         format.
         """
-        filename = os.path.join(self._data_path, 'Annotations', index + '.xml')
-        tree = ET.parse(filename)
-        objs = tree.findall('object')
+        ###CHANDRA
+        ###filename = os.path.join(self._data_path, 'Annotations', index + '.xml')
+        filename = os.path.join(self._data_path, self._image_set, 'Annotations', index + '.json')
+        ###tree = ET.parse(filename)
+        ###objs = tree.findall('object')
+        objs = json.load(open(filename))
         # if not self.config['use_diff']:
         #     # Exclude the samples labeled as difficult
         #     non_diff_objs = [
@@ -224,6 +237,7 @@ class pascal_voc(imdb):
         ishards = np.zeros((num_objs), dtype=np.int32)
 
         # Load object bounding boxes into a data frame.
+        '''
         for ix, obj in enumerate(objs):
             bbox = obj.find('bndbox')
             # Make pixel indexes 0-based
@@ -243,7 +257,27 @@ class pascal_voc(imdb):
             gt_classes[ix] = cls
             overlaps[ix, cls] = 1.0
             seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
-
+        '''
+        ix = 0
+        for e in objs:
+            x1 = float(e['xmin'])
+            y1 = float(e['ymin'])
+            x2 = float(e['xmax'])
+            y2 = float(e['ymax'])
+            
+            diffc = float(e['difficult'])
+            difficult = 0 if diffc == None else int(diffc)
+            ishards[ix] = difficult
+            
+            ###cls = self._class_to_ind[e['label'].lower().strip()] ###CHANDRA
+            cls = int(e['label'].lower().strip() == 'person')
+            #print "CHECK HERE >>>>>>>>>>>>>>>", cls, e['label'].lower().strip()
+            boxes[ix, :] = [x1, y1, x2, y2]
+            gt_classes[ix] = cls
+            overlaps[ix, cls] = 1.0
+            seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
+            ix = ix + 1
+        
         overlaps = scipy.sparse.csr_matrix(overlaps)
 
         return {'boxes': boxes,
@@ -286,11 +320,20 @@ class pascal_voc(imdb):
                                        dets[k, 2] + 1, dets[k, 3] + 1))
 
     def _do_python_eval(self, output_dir='output'):
+        ###CHANDRA
+        '''
         annopath = os.path.join(
             self._devkit_path,
             'VOC' + self._year,
             'Annotations',
             '{:s}.xml')
+        '''
+        annopath = os.path.join(
+            self._devkit_path,
+            self._image_set,
+            'Annotations',
+            '{:s}.json')
+
         imagesetfile = os.path.join(
             self._devkit_path,
             'VOC' + self._year,
