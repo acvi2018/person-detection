@@ -33,10 +33,10 @@ def log_print(text, color=None, on_color=None, attrs=None):
 
 # hyper-parameters
 # ------------
-imdb_name = 'minidrone_train'
+imdb_name = 'voc_2018_train'
 cfg_file = 'experiments/cfgs/faster_rcnn_end2end.yml'
 pretrained_model = 'data/pretrained_model/VGG_imagenet.npy'
-output_dir = 'models/saved_model3'
+output_dir = 'models/voc18'
 
 start_step = 0
 end_step = 100000
