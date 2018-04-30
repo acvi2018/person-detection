@@ -49,12 +49,16 @@ def get_minibatch(roidb, num_classes):
                 print('boxes:',boxes[b][0])
                 boxes[b][0] = 65535 - boxes[b][0]
                 print('xiugai:',boxes[b][0])
+
+            if boxes[b][3] < boxes[b][1]:
+                print('boxes:',boxes[b][1])
+                boxes[b][1] = 65535 - boxes[b][1]
+                print('agugai:',boxes[b][1])
         
         '''Added as per suggestion on https://github.com/endernewton/tf-faster-rcnn/issues/135 '''
         
         gt_boxes = np.empty((len(gt_inds), 5), dtype=np.float32)
-        
-        
+      
         ###
         '''Added as per suggestion on https://github.com/endernewton/tf-faster-rcnn/issues/135 '''
         #gt_boxes[:, 0:4] = roidb[0]['boxes'][gt_inds, :] * im_scales[0]
