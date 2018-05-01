@@ -8,7 +8,7 @@ import cv2
 import pickle
 import numpy as np
 
-from data import v2, v1, AnnotationTransform, MiniDroneDataset, detection_collate, OkutamaDataset
+from data import v2, v1, AnnotationTransform, MiniDroneDataset, detection_collate, OkutamaDataset, PascalVOCDataset
 
 def save_annotated_image(img, image_name, ground_truth, predictions, root_folder):
 	for box in ground_truth:
@@ -19,15 +19,15 @@ def save_annotated_image(img, image_name, ground_truth, predictions, root_folder
 
 
 
-root_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_mini_drone'
+root_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_voc_2012_40000itr'
 annotated_img_folder = '{0}/predicted_images'.format(root_folder)
 
 with open('{0}/pred_details.pkl'.format(root_folder), 'rb') as fp:
 	pred_dict = pickle.load(fp)
 
-testset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/metadata.csv', 
-    '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', 
-    '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations')
+testset = PascalVOCDataset('/home/vijin/iith/project/data/VOCdevkit/VOC2007/test_metadata.csv', 
+    '/home/vijin/iith/project/data/VOCdevkit/VOC2007/JPEGImages', 
+    '/home/vijin/iith/project/data/VOCdevkit/VOC2007/Person_Annotations_test')
 
 num_images = len(pred_dict.keys())
 for idx in pred_dict.keys():

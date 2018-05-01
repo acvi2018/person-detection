@@ -67,7 +67,7 @@ class PascalVOCDataset(Dataset):
     
     def pull_image(self, idx):
         image_name = self.meta_data.iloc[idx]['img_file']
-        return cv2.imread('{0}/{1}'.format(self.frame_folder, image_name), cv2.IMREAD_COLOR)
+        return cv2.imread('{0}/{1}'.format(self.frame_folder, image_name), cv2.IMREAD_COLOR), image_name
     
     def pull_annotation(self, idx):
         ann_file = self.meta_data.iloc[idx]['ann_file']

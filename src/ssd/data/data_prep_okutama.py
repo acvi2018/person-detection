@@ -71,22 +71,18 @@ for x in os.listdir(root_video_folder):
     print('Creating frame level annotations...')
     frames = create_frame_level_annotations(ann_file, video_file_name, ann_output_folder)
     
-    print frames
     meta_data_tup = []
     for index, file_path in enumerate(image_list):
         frame_number_search = re.search('.*_frame_(\d+).jpg', file_path[file_path.rindex('/')+1 :], re.IGNORECASE)
         if frame_number_search:
             if int(frame_number_search.group(1)) in frames:
-                meta_data_tup.append((file_counter+index, file_path[file_path.rindex('/')+1 :],
+                meta_data_tup.append((file_counter, file_path[file_path.rindex('/')+1 :],
                       '{0}.json'.format(file_path[file_path.rindex('/')+1 :file_path.rindex('.')])))
-        
+                file_counter = file_counter + 1        
 #     meta_data_tup = [(file_counter+index, file_path[file_path.rindex('/')+1 :],
 #                       '{0}.json'.format(file_path[file_path.rindex('/')+1 :file_path.rindex('.')])) 
 #                      for index, file_path in enumerate(image_list)]
     meta_data = meta_data.append(pd.DataFrame(meta_data_tup, columns=['id', 'img_file', 'ann_file']), ignore_index=True)
-    
-    
-    file_counter = file_counter + len(image_list)
     
 meta_data.to_csv('{0}/metadata.csv'.format(root_folder), index=False)
 print('Finished processing....')

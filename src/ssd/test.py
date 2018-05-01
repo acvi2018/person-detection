@@ -13,7 +13,7 @@ import pickle
 import numpy as np
 
 from ssd import build_ssd
-from data import v2, v1, AnnotationTransform, MiniDroneDataset, detection_collate, OkutamaDataset
+from data import v2, v1, AnnotationTransform, MiniDroneDataset, detection_collate, OkutamaDataset, PascalVOCDataset
 from utils.augmentations import SSDAugmentation
 
 # calculate IOU
@@ -125,14 +125,14 @@ def calculate_metrics_for_image(image_index, model, img_file, ground_truth, cuda
     return (TP, FP, FN, predict_dict)
 
 
-result_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_mini_drone_40000itr'
+result_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_voc_0712_100000_itr_okutama'
 cuda = True
 # Load pretrained SSD model
 net = build_ssd('test', 300, 2)    # initialize SSD
 
 #net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_0712_115000.pth')
 #net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_mAP_77.43_v2.pth')
-net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_2class40000.pth')
+net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_PascalVOC0712_1e-4_2class100000.pth')
 
 if cuda:
     net.cuda()
@@ -145,16 +145,23 @@ FN_fin = 0
 
 ssd_dim = 300
 means = (104, 117, 123)
-voc_class_map = {'Person' :1}
+voc_class_map = {'Person' :0}
 
-testset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/metadata.csv', 
-    '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations',
-     AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+# testset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/metadata.csv', 
+#     '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations',
+#      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
-# testset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/test_metadata.csv', 
-#      '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
-#      '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
-#       AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+
+testset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/test_metadata.csv', 
+     '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
+     '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
+      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+
+# voc_class_map = {'person' :0}
+# testset = PascalVOCDataset('/home/vijin/iith/project/data/VOCdevkit/VOC2007/test_metadata.csv', 
+#     '/home/vijin/iith/project/data/VOCdevkit/VOC2007/JPEGImages', 
+#     '/home/vijin/iith/project/data/VOCdevkit/VOC2007/Person_Annotations_test',
+#      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
 num_images = len(testset)
 pred_dict = {}
