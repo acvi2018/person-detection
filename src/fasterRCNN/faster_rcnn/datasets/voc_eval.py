@@ -9,8 +9,8 @@ import os
 import cPickle
 import numpy as np
 import pdb
-
-import evaluate
+import json
+from evaluate import calculate_metrics
 
 def parse_rec(filename):
     """ Parse a PASCAL VOC xml file """
@@ -31,6 +31,24 @@ def parse_rec(filename):
 
     return objects
 
+def parse_json(filename): ###New method to parse json files
+    """ Parse a PASCAL VOC JSON file """
+    data = json.load(open(filename))
+    objects = []
+    for e in data:
+        obj_struct = {}
+        obj_struct['name'] = e['label'].lower().strip()
+        #obj_struct['pose'] = e['action']
+        obj_struct['truncated'] = e['truncated']
+        obj_struct['difficult'] = e['difficult']
+        obj_struct['bbox'] = [int(e['xmin']),
+                              int(e['ymin']),
+                              int(e['xmax']),
+                              int(e['ymax'])]
+        objects.append(obj_struct)
+
+    return objects
+	
 def voc_ap(rec, prec, use_07_metric=False):
     """ ap = voc_ap(rec, prec, [use_07_metric])
     Compute VOC AP given precision and recall.
@@ -105,11 +123,18 @@ def voc_eval(detpath,
         lines = f.readlines()
     imagenames = [x.strip() for x in lines]
 
+    print(classname)
+    
+    TP_fin = 0
+    FP_fin = 0
+    FN_fin = 0
+
+	
     if not os.path.isfile(cachefile):
         # load annots
         recs = {}
         for i, imagename in enumerate(imagenames):
-            recs[imagename] = parse_rec(annopath.format(imagename))
+            recs[imagename] = parse_json(annopath.format(imagename)) ###CHANDRA parse_rec
             if i % 100 == 0:
                 print 'Reading annotation for {:d}/{:d}'.format(
                     i + 1, len(imagenames))
@@ -119,6 +144,7 @@ def voc_eval(detpath,
             cPickle.dump(recs, f)
     else:
         # load
+        print(cachefile) ###
         with open(cachefile, 'r') as f:
             recs = cPickle.load(f)
 
@@ -140,7 +166,7 @@ def voc_eval(detpath,
     with open(detfile, 'r') as f:
         lines = f.readlines()
     if any(lines) == 1:
-
+        
         splitlines = [x.strip().split(' ') for x in lines]
         image_ids = [x[0] for x in splitlines]
         confidence = np.array([float(x[1]) for x in splitlines])
@@ -161,6 +187,14 @@ def voc_eval(detpath,
             bb = BB[d, :].astype(float)
             ovmax = -np.inf
             BBGT = R['bbox'].astype(float)
+
+            pd_temp = np.array([bb[0:4]])
+            
+            v_TP, v_FP, v_FN = calculate_metrics(list(BBGT[:,0:4]), list(pd_temp))
+                        
+            TP_fin += v_TP
+            FP_fin = FP_fin + v_FP
+            FN_fin += v_FN
 
             if BBGT.size > 0:
                 # compute overlaps
@@ -189,6 +223,7 @@ def voc_eval(detpath,
                         R['det'][jmax] = 1
                     else:
                         fp[d] = 1.
+            
             else:
                 fp[d] = 1.
 
@@ -205,4 +240,15 @@ def voc_eval(detpath,
          prec = -1
          ap = -1
 
+    # Average Precision & Recall
+    v_AP = (TP_fin / (TP_fin + FP_fin)) 
+    v_Recall = (TP_fin / (TP_fin + FN_fin))
+    
+    print(len(class_recs))
+    print(len(BB))    
+    print('TP : {0}'.format(TP_fin))
+    print('FP : {0}'.format(FP_fin))
+    print('FN : {0}'.format(FN_fin))
+    print('AP@0.5 : {0}%'.format(v_AP*100))
+    print('Recall@0.5 : {0}%'.format(v_Recall * 100))
     return rec, prec, ap
