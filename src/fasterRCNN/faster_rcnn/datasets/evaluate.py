@@ -1,7 +1,7 @@
 # --------------------------------------------------------
 # Fast R-CNN
 # Licensed under The MIT License [see LICENSE for details]
-# Written by Chandrasekhar Ananthapatnayakuni
+# Written by Vijin
 # --------------------------------------------------------
 
 import cv2
