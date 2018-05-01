@@ -336,9 +336,9 @@ class pascal_voc(imdb):
 
         imagesetfile = os.path.join(
             self._devkit_path,
-            'VOC' + self._year,
-            'ImageSets',
-            'Main',
+            ###'VOC' + self._year,
+            ###'ImageSets',
+            ###'Main',
             self._image_set + '.txt')
         cachedir = os.path.join(self._devkit_path, 'annotations_cache')
         aps = []
