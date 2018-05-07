@@ -32,6 +32,7 @@ class MiniDroneDataset(Dataset):
         img = cv2.imread('{0}/{1}'.format(self.frame_folder, image_name))
         height, width, channels = img.shape
         
+        # iterate through json and decide to include occluded and generated based on flags
         for i in range(len(ann_json)):
             valid_ann_list.append([ann_json[i]['xmin'], ann_json[i]['ymin'], 
                                   ann_json[i]['xmax'], ann_json[i]['ymax'], ann_json[i]['label']])

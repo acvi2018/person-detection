@@ -45,7 +45,7 @@ def create_frame_level_annotations(annotation_file, video_file_name, output_path
     for frame in frames:
         frame_df = annotation_df[np.logical_and(annotation_df.frame == frame, annotation_df.lost == 0)][cols_req]
         with open('{0}/{1}_frame_{2:05d}.json'.format(output_path, video_file_name, frame), 'w') as fp:
-            json.dump(frame_df.T.to_dict().values(), fp)
+            json.dump(list(frame_df.T.to_dict().values()), fp)
     return frames
 
 
