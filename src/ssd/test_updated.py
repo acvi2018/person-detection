@@ -1,18 +1,18 @@
-from __future__ import print_function
-import sys
 import os
-import argparse
+import sys
+# module_path = os.path.abspath(os.path.join('/home/vijin/iith/project/workpad/ssd.pytorch'))
+# if module_path not in sys.path:
+#     sys.path.append(module_path)
 import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 from torch.autograd import Variable
-from data import VOCroot, VOC_CLASSES as labelmap
-from PIL import Image
-from data import AnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSES
-import torch.utils.data as data
+import cv2
+import pickle
+import numpy as np
+
 from ssd import build_ssd
-<<<<<<< HEAD
 from data import v2, v1, AnnotationTransform, MiniDroneDataset, detection_collate, OkutamaDataset, PascalVOCDataset
 from utils.augmentations import SSDAugmentation
 
@@ -125,15 +125,14 @@ def calculate_metrics_for_image(image_index, model, img_file, ground_truth, cuda
     return (TP, FP, FN, predict_dict)
 
 
-result_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_mini_drone_90000itr'
+result_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_voc_0712_100000_itr_okutama'
 cuda = True
 # Load pretrained SSD model
 net = build_ssd('test', 300, 2)    # initialize SSD
 
 #net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_0712_115000.pth')
 #net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_mAP_77.43_v2.pth')
-#net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_PascalVOC0712_1e-4_2class100000.pth')
-net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_minidrone_1e-4_2class90000.pth')
+net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_PascalVOC0712_1e-4_2class100000.pth')
 
 if cuda:
     net.cuda()
@@ -148,15 +147,15 @@ ssd_dim = 300
 means = (104, 117, 123)
 voc_class_map = {'Person' :0}
 
-testset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/metadata.csv', 
-    '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations',
-     AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+# testset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/metadata.csv', 
+#     '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations',
+#      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
 
-# testset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/test_metadata.csv', 
-#      '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
-#      '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
-#       AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+testset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/test_metadata.csv', 
+     '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
+     '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
+      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
 # voc_class_map = {'person' :0}
 # testset = PascalVOCDataset('/home/vijin/iith/project/data/VOCdevkit/VOC2007/test_metadata.csv', 
@@ -192,80 +191,7 @@ fp1.write('Average Precision@0.5 : {0}%\n'.format(AP * 100))
 fp1.write('Average Recall@0.5 : {0}%\n'.format(Recall * 100))
 fp1.write('F1 Score@0.5 : {0}%\n'.format((2* AP * Recall) / (AP + Recall)))
 fp1.close()
-=======
->>>>>>> 001118ec77f8c3e15c83c11e6f37f98c5cce8e92
 
-parser = argparse.ArgumentParser(description='Single Shot MultiBox Detection')
-parser.add_argument('--trained_model', default='weights/ssd_300_VOC0712.pth',
-                    type=str, help='Trained state_dict file path to open')
-parser.add_argument('--save_folder', default='eval/', type=str,
-                    help='Dir to save results')
-parser.add_argument('--visual_threshold', default=0.6, type=float,
-                    help='Final confidence threshold')
-parser.add_argument('--cuda', default=False, type=bool,
-                    help='Use cuda to train model')
-parser.add_argument('--voc_root', default=VOCroot, help='Location of VOC root directory')
-
-args = parser.parse_args()
-
-if not os.path.exists(args.save_folder):
-    os.mkdir(args.save_folder)
-
-
-def test_net(save_folder, net, cuda, testset, transform, thresh):
-    # dump predictions and assoc. ground truth to text file for now
-    filename = save_folder+'test1.txt'
-    num_images = len(testset)
-    for i in range(num_images):
-        print('Testing image {:d}/{:d}....'.format(i+1, num_images))
-        img = testset.pull_image(i)
-        img_id, annotation = testset.pull_anno(i)
-        x = torch.from_numpy(transform(img)[0]).permute(2, 0, 1)
-        x = Variable(x.unsqueeze(0))
-
-        with open(filename, mode='a') as f:
-            f.write('\nGROUND TRUTH FOR: '+img_id+'\n')
-            for box in annotation:
-                f.write('label: '+' || '.join(str(b) for b in box)+'\n')
-        if cuda:
-            x = x.cuda()
-
-        y = net(x)      # forward pass
-        detections = y.data
-        # scale each detection back up to the image
-        scale = torch.Tensor([img.shape[1], img.shape[0],
-                             img.shape[1], img.shape[0]])
-        pred_num = 0
-        for i in range(detections.size(1)):
-            j = 0
-            while detections[0, i, j, 0] >= 0.6:
-                if pred_num == 0:
-                    with open(filename, mode='a') as f:
-                        f.write('PREDICTIONS: '+'\n')
-                score = detections[0, i, j, 0]
-                label_name = labelmap[i-1]
-                pt = (detections[0, i, j, 1:]*scale).cpu().numpy()
-                coords = (pt[0], pt[1], pt[2], pt[3])
-                pred_num += 1
-                with open(filename, mode='a') as f:
-                    f.write(str(pred_num)+' label: '+label_name+' score: ' +
-                            str(score) + ' '+' || '.join(str(c) for c in coords) + '\n')
-                j += 1
-
-
-if __name__ == '__main__':
-    # load net
-    num_classes = len(VOC_CLASSES) + 1 # +1 background
-    net = build_ssd('test', 300, num_classes) # initialize SSD
-    net.load_state_dict(torch.load(args.trained_model))
-    net.eval()
-    print('Finished loading model!')
-    # load data
-    testset = VOCDetection(args.voc_root, [('2007', 'test')], None, AnnotationTransform())
-    if args.cuda:
-        net = net.cuda()
-        cudnn.benchmark = True
-    # evaluation
-    test_net(args.save_folder, net, args.cuda, testset,
-             BaseTransform(net.size, (104, 117, 123)),
-             thresh=args.visual_threshold)
+print('AP@0.5 : {0}%'.format(AP*100))
+print('Recall@0.5 : {0}%'.format(Recall * 100))
+print('F1 Score@0.5 : {0}'.format((2* AP * Recall) / (AP + Recall)))
