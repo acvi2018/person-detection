@@ -80,7 +80,7 @@ def calculate_metrics(ground_truths, predictions, iou_threshold = 0.5):
     
     return (TP, FP, FN)
 
-def calculate_metrics_for_image(image_index, model, img_file, ground_truth, cuda=False, person_class_index=15):
+def calculate_metrics_for_image(image_index, model, img, ground_truth, cuda=False, person_class_index=15):
     '''
     Model will give all detections. We are only interested in person, person class index : 15
     '''
@@ -125,73 +125,77 @@ def calculate_metrics_for_image(image_index, model, img_file, ground_truth, cuda
     return (TP, FP, FN, predict_dict)
 
 
-result_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_voc_0712_100000_itr_okutama'
-cuda = True
-# Load pretrained SSD model
-net = build_ssd('test', 300, 2)    # initialize SSD
+def evaluate_model(model_path, dataset, results_folder, is_cuda=True, save_results=False):
+    model = build_ssd('test', 300, 2)    # initialize SSD
+    model.load_weights(model_path)
 
-#net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_0712_115000.pth')
-#net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_mAP_77.43_v2.pth')
-net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_PascalVOC0712_1e-4_2class100000.pth')
+    if is_cuda:
+        model.cuda()
 
-if cuda:
-    net.cuda()
+    num_images = len(dataset)
+    pred_dict = {}
 
-# initialize metrics
-TP_fin = 0
-FP_fin = 0
-FN_fin = 0
+    # initialize metrics
+    TP_fin = 0
+    FP_fin = 0
+    FN_fin = 0
 
+    for i in range(num_images):
+        #print('Testing image {:d}/{:d}....'.format(i+1, num_images))
+        img, image_name = dataset.pull_image(i)
+        groundtruth = dataset.pull_annotation(i)
+        TP, FP, FN, pred_obj= calculate_metrics_for_image(i, model, img, groundtruth, is_cuda, 1)
+        pred_dict[i] = pred_obj
+        TP_fin += TP
+        FP_fin += FP
+        FN_fin += FN
 
-ssd_dim = 300
-means = (104, 117, 123)
-voc_class_map = {'Person' :0}
+    # Average Precision & Recall 
+    AP = TP_fin/(TP_fin+FP_fin) 
+    AR = TP_fin/(TP_fin+FN_fin)
+    F1_Score = (2* AP * AR) / (AP + AR)
 
-# testset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/metadata.csv', 
-#     '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations',
-#      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
-
-
-testset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/test_metadata.csv', 
-     '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
-     '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
-      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
-
-# voc_class_map = {'person' :0}
-# testset = PascalVOCDataset('/home/vijin/iith/project/data/VOCdevkit/VOC2007/test_metadata.csv', 
-#     '/home/vijin/iith/project/data/VOCdevkit/VOC2007/JPEGImages', 
-#     '/home/vijin/iith/project/data/VOCdevkit/VOC2007/Person_Annotations_test',
-#      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
-
-num_images = len(testset)
-pred_dict = {}
-
-for i in range(num_images):
-    print('Testing image {:d}/{:d}....'.format(i+1, num_images))
-    img, image_name = testset.pull_image(i)
-    groundtruth = testset.pull_annotation(i)
-    TP, FP, FN, pred_obj= calculate_metrics_for_image(i, net, img, groundtruth, cuda, 1)
-    pred_dict[i] = pred_obj
-    print(TP,FP,FN)
-    TP_fin += TP
-    FP_fin += FP
-    FN_fin += FN
+    print('AP@0.5 : {0}%'.format(AP*100))
+    print('Recall@0.5 : {0}%'.format(AR * 100))
+    print('F1 Score@0.5 : {0}'.format(F1_Score))
 
 
-# Pickle prediction details as obj for further error analysis
-with open('{0}/pred_details.pkl'.format(result_folder), 'wb') as fp:
-	pickle.dump(pred_dict, fp)
+    if save_results:
+        # Pickle prediction details as obj for further error analysis
+        with open('{0}/pred_details.pkl'.format(result_folder), 'wb') as fp:
+            pickle.dump(pred_dict, fp)
 
-# Average Precision & Recall 
-AP = TP_fin/(TP_fin+FP_fin) 
-Recall = TP_fin/(TP_fin+FN_fin)
+        fp1 = open('{0}/eval.txt'.format(result_folder), 'w')
+        fp1.write('Average Precision@0.5 : {0}%\n'.format(AP * 100))
+        fp1.write('Average Recall@0.5 : {0}%\n'.format(AR * 100))
+        fp1.write('F1 Score@0.5 : {0}'.format(F1_Score))
+        fp1.close()
 
-fp1 = open('{0}/eval.txt'.format(result_folder), 'w')
-fp1.write('Average Precision@0.5 : {0}%\n'.format(AP * 100))
-fp1.write('Average Recall@0.5 : {0}%\n'.format(Recall * 100))
-fp1.write('F1 Score@0.5 : {0}%\n'.format((2* AP * Recall) / (AP + Recall)))
-fp1.close()
 
-print('AP@0.5 : {0}%'.format(AP*100))
-print('Recall@0.5 : {0}%'.format(Recall * 100))
-print('F1 Score@0.5 : {0}'.format((2* AP * Recall) / (AP + Recall)))
+
+if __name__ == '__main__':
+
+    result_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_okutama_15000itr_okutama'
+    cuda = True
+    ssd_dim = 300
+    means = (104, 117, 123)
+    voc_class_map = {'Person' :0}
+
+    # testset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/metadata.csv', 
+    #     '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations',
+    #      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+
+
+    testset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/test_metadata.csv', 
+         '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
+         '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
+          AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+
+    # voc_class_map = {'person' :0}
+    # testset = PascalVOCDataset('/home/vijin/iith/project/data/VOCdevkit/VOC2007/test_metadata.csv', 
+    #     '/home/vijin/iith/project/data/VOCdevkit/VOC2007/JPEGImages', 
+    #     '/home/vijin/iith/project/data/VOCdevkit/VOC2007/Person_Annotations_test',
+    #      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+
+
+    evaluate_model('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_okutama_1e-4_2class15000.pth', testset,result_folder, is_cuda=cuda, save_results=True)

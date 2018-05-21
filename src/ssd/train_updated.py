@@ -14,6 +14,7 @@ from layers.modules import MultiBoxLoss
 from ssd import build_ssd
 import numpy as np
 import time
+from test_updated import evaluate_model
 
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
@@ -23,10 +24,10 @@ parser.add_argument('--version', default='v2', help='conv11_2(v2) or pool6(v1) a
 parser.add_argument('--basenet', default='vgg16_reducedfc.pth', help='pretrained base model')
 parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Jaccard index for matching')
 parser.add_argument('--batch_size', default=32, type=int, help='Batch size for training')
-parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
+parser.add_argument('--resume', default='weights/ssd300_minidrone_1e-4_2class10000.pth', type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--iterations', default=120000, type=int, help='Number of training iterations')
-parser.add_argument('--start_iter', default=0, type=int, help='Begin counting iterations starting from this value (should be used with resume)')
+parser.add_argument('--start_iter', default=10001, type=int, help='Begin counting iterations starting from this value (should be used with resume)')
 parser.add_argument('--cuda', default=True, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--lr', '--learning-rate', default=1e-4, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
@@ -111,19 +112,23 @@ def train():
     #     ssd_dim, means), AnnotationTransform())
 
     #Mini drone training
-    # voc_class_map = {'Person' :0}
-    # dataset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-training-set/metadata.csv', 
-    # '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-training-set/frames', 
-    # '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-training-set/annotations',
-    #  AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+    voc_class_map = {'Person' :0}
+    dataset = MiniDroneDataset('/home/vijin/iith/project/data/mini-drone-data/DroneProtect-training-set/metadata.csv', 
+    '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-training-set/frames', 
+    '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-training-set/annotations',
+     AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
+    valid_dataset = MiniDroneDataset('/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/valid_metadata.csv', 
+    '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', 
+    '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations',
+     AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
      # Okutama training
-    voc_class_map = {'Person' :0}
-    dataset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/train_metadata.csv', 
-    '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
-    '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
-     AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+    # voc_class_map = {'Person' :0}
+    # dataset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/train_metadata.csv', 
+    # '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
+    # '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
+    #  AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
 
     # Pascal VOC training
@@ -141,6 +146,7 @@ def train():
     #                               shuffle=True, collate_fn=detection_collate, pin_memory=True)
 
     data_loader = data.DataLoader(dataset, batch_size,  num_workers=4, shuffle=True, collate_fn=detection_collate, pin_memory=True)
+
     for iteration in range(args.start_iter, max_iter):
         if (not batch_iterator) or (iteration % epoch_size == 0):
             # create batch iterator
@@ -178,11 +184,16 @@ def train():
             print('Timer: %.4f sec.' % (t1 - t0))
             print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data[0]))
 
-        if iteration % 5000 == 0:
+        if iteration % 5000 == 0 and iteration != 0:
+            # TO DO: Add validation set evaluation
             print('Saving state, iter:', iteration)
-            torch.save(ssd_net.state_dict(), 'weights/ssd300_okutama_1e-4_2class' +
+            torch.save(ssd_net.state_dict(), 'weights/ssd300_minidrone_1e-4_2class' +
                        repr(iteration) + '.pth')
-    torch.save(ssd_net.state_dict(), args.save_folder + '' + args.version + '_okutama.pth')
+            print('Evaluating @ ', iteration)
+            evaluate_model('weights/ssd300_minidrone_1e-4_2class' +
+                       repr(iteration) + '.pth', valid_dataset, None, is_cuda=True, save_results=False)
+
+    torch.save(ssd_net.state_dict(), args.save_folder + '' + args.version + '_minidrone.pth')
 
 
 def adjust_learning_rate(optimizer, gamma, step):
