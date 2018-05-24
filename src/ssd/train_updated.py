@@ -1,3 +1,4 @@
+#http://silverpond.com.au/2017/02/17/how-we-built-and-trained-an-ssd-multibox-detector-in-tensorflow.html
 from __future__ import division
 import os
 import torch
@@ -24,7 +25,7 @@ parser.add_argument('--version', default='v2', help='conv11_2(v2) or pool6(v1) a
 parser.add_argument('--basenet', default='vgg16_reducedfc.pth', help='pretrained base model')
 parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Jaccard index for matching')
 parser.add_argument('--batch_size', default=32, type=int, help='Batch size for training')
-parser.add_argument('--resume', default='weights/ssd300_minidrone_1e-4_2class10000.pth', type=str, help='Resume from checkpoint')
+parser.add_argument('--resume', default='weights/ssd300_minidrone_1e-4_2class_added_mboxes_conv4_3_10000.pth', type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--iterations', default=120000, type=int, help='Number of training iterations')
 parser.add_argument('--start_iter', default=10001, type=int, help='Begin counting iterations starting from this value (should be used with resume)')
@@ -98,6 +99,7 @@ if not args.resume:
 optimizer = optim.SGD(net.parameters(), lr=args.lr,
                       momentum=args.momentum, weight_decay=args.weight_decay)
 criterion = MultiBoxLoss(num_classes, 0.5, True, 0, True, 3, 0.5, False, args.cuda)
+print(ssd_net)
 
 
 def train():
@@ -187,10 +189,10 @@ def train():
         if iteration % 5000 == 0 and iteration != 0:
             # TO DO: Add validation set evaluation
             print('Saving state, iter:', iteration)
-            torch.save(ssd_net.state_dict(), 'weights/ssd300_minidrone_1e-4_2class' +
+            torch.save(ssd_net.state_dict(), 'weights/ssd300_minidrone_1e-4_2class_added_mboxes_conv4_3_' +
                        repr(iteration) + '.pth')
             print('Evaluating @ ', iteration)
-            evaluate_model('weights/ssd300_minidrone_1e-4_2class' +
+            evaluate_model('weights/ssd300_minidrone_1e-4_2class_added_mboxes_conv4_3_' +
                        repr(iteration) + '.pth', valid_dataset, None, is_cuda=True, save_results=False)
 
     torch.save(ssd_net.state_dict(), args.save_folder + '' + args.version + '_minidrone.pth')

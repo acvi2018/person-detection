@@ -181,15 +181,15 @@ if __name__ == '__main__':
     means = (104, 117, 123)
     voc_class_map = {'Person' :0}
 
-    # testset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/metadata.csv', 
-    #     '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations',
-    #      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+    testset = MiniDroneDataset('//home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/metadata.csv', 
+        '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/frames', '/home/vijin/iith/project/data/mini-drone-data/DroneProtect-testing-set/annotations',
+         AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
 
-    testset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/test_metadata.csv', 
-         '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
-         '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
-          AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
+    # testset = OkutamaDataset('/home/vijin/iith/project/data/okutama-action-drone-data/test_metadata.csv', 
+    #      '/home/vijin/iith/project/data/okutama-action-drone-data/frames', 
+    #      '/home/vijin/iith/project/data/okutama-action-drone-data/annotations',
+    #       AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
     # voc_class_map = {'person' :0}
     # testset = PascalVOCDataset('/home/vijin/iith/project/data/VOCdevkit/VOC2007/test_metadata.csv', 
@@ -198,4 +198,8 @@ if __name__ == '__main__':
     #      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
 
-    evaluate_model('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_okutama_1e-4_2class15000.pth', testset,result_folder, is_cuda=cuda, save_results=True)
+    # evaluate_model('/home/vijin/iith/project/workpad/git/person-detection/src/ssd/weights/ssd300_minidrone_1e-4_2class_added_mboxes_conv4_35000.pth', 
+    #     testset,result_folder, is_cuda=cuda, save_results=True)
+
+    evaluate_model('/home/vijin/iith/project/workpad/git/person-detection/src/ssd/weights/ssd300_minidrone_1e-4_2class10000.pth', 
+        testset,result_folder, is_cuda=cuda, save_results=True)
