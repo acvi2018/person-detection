@@ -29,6 +29,7 @@ class OkutamaDataset(Dataset):
         valid_ann_list = []
         image_name = self.meta_data.iloc[idx]['img_file']
         ann_file = self.meta_data.iloc[idx]['ann_file']
+        
 
         # Read image and json ann file
         with open('{0}/{1}'.format(self.ann_folder, ann_file), 'r') as jfile:

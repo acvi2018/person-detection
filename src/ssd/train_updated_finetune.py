@@ -26,7 +26,7 @@ parser.add_argument('--batch_size', default=32, type=int, help='Batch size for t
 parser.add_argument('--resume', default="/home/emds/atul/ssd/model/ssd300_minidrone_1e-4_2class60000.pth", type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--iterations', default=10000, type=int, help='Number of training iterations')
-parser.add_argument('--start_iter', default=60000, type=int, help='Begin counting iterations starting from this value (should be used with resume)')
+parser.add_argument('--start_iter', default=60001, type=int, help='Begin counting iterations starting from this value (should be used with resume)')
 parser.add_argument('--cuda', default=True, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--lr', '--learning-rate', default=1e-5, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
@@ -55,7 +55,7 @@ num_classes = 2
 batch_size = args.batch_size
 accum_batch_size = 32
 iter_size = accum_batch_size / batch_size
-max_iter = 70000
+max_iter = 90020
 weight_decay = 0.00005
 stepvalues = (70000, 80000, 100000, 120000)
 gamma = 0.1
@@ -71,6 +71,11 @@ if args.cuda:
 if args.resume:
     print('Resuming training, loading {}...'.format(args.resume))
     ssd_net.load_weights(args.resume)
+    for i, param in ssd_net.named_parameters():
+        if(i[0:3] == 'vgg'):
+            param.requires_grad = False
+        else:
+            param.requires_grad = True        
 else:
     vgg_weights = torch.load(args.save_folder + args.basenet)
     print('Loading base network...')
@@ -96,7 +101,7 @@ if not args.resume:
     ssd_net.loc.apply(weights_init)
     ssd_net.conf.apply(weights_init)
 
-optimizer = optim.SGD(net.parameters(), lr=args.lr,
+optimizer = optim.SGD(filter(lambda p: p.requires_grad, ssd_net.parameters()), lr=args.lr,
                       momentum=args.momentum, weight_decay=args.weight_decay)
 criterion = MultiBoxLoss(num_classes, 0.5, True, 0, True, 3, 0.5, False, args.cuda)
 
@@ -147,8 +152,9 @@ def train():
     # data_loader = data.DataLoader(dataset, batch_size, num_workers=args.num_workers,
     #                               shuffle=True, collate_fn=detection_collate, pin_memory=True)
 
-    data_loader = data.DataLoader(dataset, batch_size,  shuffle=True, collate_fn=detection_collate, pin_memory=True)
+    data_loader = data.DataLoader(dataset, batch_size,  num_workers=4, shuffle=True, collate_fn=detection_collate, pin_memory=True)
     for iteration in range(args.start_iter, max_iter):
+        
         if (not batch_iterator) or (iteration % epoch_size == 0):
             # create batch iterator
             batch_iterator = iter(data_loader)
@@ -187,7 +193,7 @@ def train():
 
         if iteration % 5000 == 0:
             print('Saving state, iter:', iteration)
-            torch.save(ssd_net.state_dict(), 'weights/ssd300_okutama_1e-4_2class' +
+            torch.save(ssd_net.state_dict(), 'weights/ssd300_okutama_freeze_1e-4_2class' +
                        repr(iteration) + '.pth')
     torch.save(ssd_net.state_dict(), args.save_folder + '' + args.version + '_okutama.pth')
 
