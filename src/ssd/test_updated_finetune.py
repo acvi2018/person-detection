@@ -125,14 +125,14 @@ def calculate_metrics_for_image(image_index, model, img_file, ground_truth, cuda
     return (TP, FP, FN, predict_dict)
 
 
-result_folder = '/home/emds/atul/ssd/results/2class_SSD300_md60knok25k_freeze_itr_okutama_dataset'
+result_folder = '/home/emds/atul/ssd/results/2class_SSD300_md60knok30k_freeze_itr_okutama_dataset'
 cuda = True
 # Load pretrained SSD model
 net = build_ssd('test', 300, 2)    # initialize SSD
 
 #net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_0712_115000.pth')
 #net.load_weights('/home/vijin/iith/project/workpad/ssd.pytorch/weights/ssd300_mAP_77.43_v2.pth')
-net.load_weights('/home/emds/atul/ssd/weights/ssd300_okutama_freeze_1e-4_2class85000.pth')
+net.load_weights('/home/emds/atul/ssd/weights/ssd300_okutama_freeze_1e-4_2class90000.pth')
 
 if cuda:
     net.cuda()
