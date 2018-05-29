@@ -167,33 +167,62 @@ def mdrone_eval(detpath,
 
         splitlines = [x.strip().split(' ') for x in lines]
         image_ids = [x[0] for x in splitlines]
-        confidence = np.array([float(x[1]) for x in splitlines])
-        BB = np.array([[float(z) for z in x[2:]] for x in splitlines])
+        image_ids = list(set(image_ids)) ###
+        ###confidence = np.array([float(x[1]) for x in splitlines])
+        ###BB = np.array([[float(z) for z in x[2:]] for x in splitlines])
 
         # sort by confidence
-        sorted_ind = np.argsort(-confidence)
-        sorted_scores = np.sort(-confidence)
-        BB = BB[sorted_ind, :]
-        image_ids = [image_ids[x] for x in sorted_ind]
+        ###sorted_ind = np.argsort(-confidence)
+        ###sorted_scores = np.sort(-confidence)
+        ###BB = BB[sorted_ind, :]
+        ###image_ids = [image_ids[x] for x in sorted_ind]
+
+        confidence={}
+        BB={}
+        #val=[]
+        for x in splitlines:
+            if confidence.has_key(x[0]):
+                val_c = confidence[x[0]]
+                val_b = BB[x[0]]
+                
+                val_c.append(float(x[1]))
+                vals = [float(i) for i in x[2:]]
+                val_b.append(np.array(vals))
+                
+                confidence[x[0]] = val_c
+                BB[x[0]] = val_b
+            else:
+                confidence[x[0]] = [float(x[1])]
+                vals = [float(i) for i in x[2:]]
+                BB[x[0]] = [np.array(vals)]
+
+
 
         # go down dets and mark TPs and FPs
         nd = len(image_ids)
+        #print 'nd', nd
         tp = np.zeros(nd)
         fp = np.zeros(nd)
+
         for d in range(nd):
             R = class_recs[image_ids[d]]
-            bb = BB[d, :].astype(float)
+            ###bb = BB[d, :].astype(float)
+            bb = BB[image_ids[d]]
             ovmax = -np.inf
             BBGT = R['bbox'].astype(float)
 
-            pd_temp = np.array([bb[0:4]])###
+            ###pd_temp = np.array([bb[0:4]])###
+            pd_temp = bb###
             
-            v_TP, v_FP, v_FN = calculate_metrics(list(BBGT[:,0:4]), list(pd_temp))
-                        
-            TP_fin += v_TP
-            FP_fin = FP_fin + v_FP
-            FN_fin += v_FN
+            if len(BBGT > 0):###
+                v_TP, v_FP, v_FN = calculate_metrics(list(BBGT[:,0:4]), list(pd_temp))
+                ###print(calculate_metrics(list(BBGT[:,0:4]), list(pd_temp))) ###
+                print(v_TP, v_FP, v_FN)        
+                TP_fin += v_TP
+                FP_fin += v_FP ###
+                FN_fin += v_FN
             ###
+            '''
             if BBGT.size > 0:
                 # compute overlaps
                 # intersection
@@ -213,7 +242,7 @@ def mdrone_eval(detpath,
                 overlaps = inters / uni
                 ovmax = np.max(overlaps)
                 jmax = np.argmax(overlaps)
-
+            '''
             if ovmax > ovthresh:
                 '''if not R['difficult'][jmax]:
                     if not R['det'][jmax]:
