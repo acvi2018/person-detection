@@ -175,7 +175,7 @@ def evaluate_model(model_path, dataset, results_folder, is_cuda=True, save_resul
 
 if __name__ == '__main__':
 
-    result_folder = '/home/vijin/iith/project/workpad/results/2class_SSD300_okutama_15000itr_okutama'
+    result_folder = '/home/vijin/iith/project/workpad/results/architecture_changes/added_mboxes_conv4_3/ssd300_minidrone_1e-4_100000'
     cuda = True
     ssd_dim = 300
     means = (104, 117, 123)
@@ -198,8 +198,8 @@ if __name__ == '__main__':
     #      AnnotationTransform(voc_class_map), SSDAugmentation(ssd_dim, means))
 
 
-    # evaluate_model('/home/vijin/iith/project/workpad/git/person-detection/src/ssd/weights/ssd300_minidrone_1e-4_2class_added_mboxes_conv4_35000.pth', 
-    #     testset,result_folder, is_cuda=cuda, save_results=True)
-
-    evaluate_model('/home/vijin/iith/project/workpad/git/person-detection/src/ssd/weights/ssd300_minidrone_1e-4_2class10000.pth', 
+    evaluate_model('/home/vijin/iith/project/workpad/git/person-detection/src/ssd/weights/ssd300_minidrone_1e-4_2class_added_mboxes_conv4_3_100000.pth', 
         testset,result_folder, is_cuda=cuda, save_results=True)
+
+    # evaluate_model('/home/vijin/iith/project/workpad/git/person-detection/src/ssd/weights/ssd300_minidrone_1e-4_2class10000.pth', 
+    #     testset,result_folder, is_cuda=cuda, save_results=True)
